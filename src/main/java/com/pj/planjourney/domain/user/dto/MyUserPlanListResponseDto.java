@@ -8,24 +8,32 @@ import java.time.LocalDateTime;
 @Getter
 public class MyUserPlanListResponseDto {
 
-    private Long id;
+    private Long planId;
     private String nickname;
     private String cityname;
     private String title;
     private Boolean isPublished;
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
     private LocalDateTime publishedAt;
     private Integer likeCount;
     private Integer commentCount;
 
 
-    public MyUserPlanListResponseDto(Long id, String nickname, String name, String title, Boolean isPublished, LocalDateTime createdAt, LocalDateTime publishedAt, Integer likeCount, Integer count) {
-        this.id = id;
+    public MyUserPlanListResponseDto(Long planId,
+                                     String nickname,
+                                     String name,
+                                     String title,
+                                     Boolean isPublished,
+                                     LocalDateTime createdAt,
+                                     LocalDateTime publishedAt,
+                                     Integer likeCount,
+                                     Integer count) {
+        this.planId = planId;
         this.nickname = nickname;
         this.cityname = name;
         this.title = title;
         this.isPublished = isPublished;
-        this.createAt = createdAt;
+        this.createdAt = createdAt;
         this.publishedAt = publishedAt;
         this.likeCount = likeCount;
         this.commentCount = count;
