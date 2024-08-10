@@ -44,21 +44,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
 
+
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         log.info("로그인 시도");
         try {
             String body = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
-
-            if (body.isEmpty()) {
-                throw new RuntimeException("Request body is empty.");
-            }
-
             LoginRequestDto requestDto = new ObjectMapper().readValue(body, LoginRequestDto.class);
 
             UsernamePasswordAuthenticationToken authRequest
                     = new UsernamePasswordAuthenticationToken(requestDto.getEmail(), requestDto.getPassword());
-
             setDetails(request, authRequest);
             return getAuthenticationManager().authenticate( // authenticate인증처리 매서드
                     authRequest
@@ -75,6 +70,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
 
 
+
+    /*
+    * 로그인 성공 시 -> token 생성 및 헤더로 token 보내줍니다.
+    * 기존의 refresh token 이 존재 및 유효할 경우 : 기존의 refresh token 그대로 사용
+    * 그 외 : refresh token 재발급 및 기존의 refresh token 은 blackList 에 추가(무효화)
+    * */
     @Override
     public void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
         log.info("로그인 성공 및 JWT 생성");
@@ -85,16 +86,20 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
 
         String accessToken = jwtUtil.createAccessToken(email, authorities);
-        String refreshToken = jwtUtil.createRefreshToken(id);
+        String refreshToken;
 
-        // 기존 리프레시 토큰을 블랙리스트에 추가
         String previousRefreshToken = refreshTokenService.getRefreshToken(id);
-        if (previousRefreshToken != null) {
-            refreshTokenService.invalidateToken(previousRefreshToken);
+        if (previousRefreshToken != null&& !refreshTokenService.isTokenBlacklisted(previousRefreshToken)) {
+           refreshToken = previousRefreshToken;
+        } else{
+            refreshToken = jwtUtil.createRefreshToken(email);
+
+            if(previousRefreshToken != null){
+                refreshTokenService.invalidateToken(previousRefreshToken);
+            }
+            refreshTokenService.saveRefreshToken(email, refreshToken);
         }
 
-        refreshTokenService.saveRefreshToken(id, refreshToken);
-        // Send tokens in response headers
         response.setHeader("Authorization", accessToken);
         response.setHeader("RefreshToken", refreshToken);
     }

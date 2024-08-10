@@ -32,11 +32,11 @@ public class UserAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuc
         try {
             UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
             String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getAuthorities());
-            String refreshToken = jwtUtil.createRefreshToken(user.getUser().getId());
-            Long userId = ((UserDetailsImpl) authentication.getPrincipal()).getUser().getId();
+            String refreshToken = jwtUtil.createRefreshToken(user.getUser().getEmail());
+            String email = user.getUser().getEmail();
 
             // Save refresh token
-            refreshTokenService.saveRefreshToken(userId, refreshToken);
+            refreshTokenService.saveRefreshToken(email, refreshToken);
             log.info(refreshToken);
             response.setContentType("application/json");
             response.setHeader("Authorization", accessToken);

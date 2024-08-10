@@ -2,7 +2,6 @@ package com.pj.planjourney.domain.user.controller;
 
 import com.pj.planjourney.domain.refreshtoken.service.RefreshTokenService;
 import com.pj.planjourney.domain.user.dto.*;
-import com.pj.planjourney.domain.user.entity.User;
 import com.pj.planjourney.domain.user.service.UserService;
 import com.pj.planjourney.global.auth.service.UserDetailsImpl;
 import com.pj.planjourney.global.auth.service.UserDetailsServiceImpl;
@@ -10,20 +9,21 @@ import com.pj.planjourney.global.common.response.ApiResponse;
 import com.pj.planjourney.global.common.response.ApiResponseMessage;
 import com.pj.planjourney.global.jwt.filter.JwtAuthenticationFilter;
 import com.pj.planjourney.global.jwt.util.JwtUtil;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -37,7 +37,8 @@ public class UserController {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RefreshTokenService refreshTokenService;
-
+    private final AuthenticationManager authenticationManager;
+    private final RedisTemplate redisTemplate;
 
     //회원가입
     @PostMapping("")
@@ -111,38 +112,58 @@ public class UserController {
         return ResponseEntity.ok(new ApiResponse<>(responseDtoList, ApiResponseMessage.SUCCESS));
     }
 
+
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserResponseDto>> login(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<LoginResponseDto>> login(@RequestBody LoginRequestDto loginRequest) {
         try {
             // 인증 시도
-            Authentication authentication = jwtAuthenticationFilter.attemptAuthentication(request, response);
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+            );
 
-            if (authentication != null && authentication.getPrincipal() instanceof UserDetailsImpl) {
-                UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            // 인증 후 사용자 정보 가져오기
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String email = userDetails.getUsername();
 
-                // 인증 후 JWT 토큰 생성 및 응답 헤더에 추가
-                jwtAuthenticationFilter.successfulAuthentication(request, response, null, authentication);
+            // JWT 토큰 생성
+            String accessToken = jwtUtil.createAccessToken(email, userDetails.getAuthorities());
+            String refreshToken = jwtUtil.createRefreshToken(email);
 
-                UserResponseDto userResponseDto = new UserResponseDto(
-                        userDetails.getUsername(),
-                        userDetails.getUser().getNickname()
-                );
-
-                return ResponseEntity.ok(new ApiResponse<>(userResponseDto, ApiResponseMessage.USER_LOGIN));
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(null, ApiResponseMessage.ERROR));
+            // 기존 리프레시 토큰 블랙리스트 추가
+            String existingRefreshToken = (String) redisTemplate.opsForValue().get("refreshToken:" + email);
+            if (existingRefreshToken != null) {
+                refreshTokenService.invalidateToken(existingRefreshToken);
             }
+
+            // 새로운 리프레시 토큰 저장
+            refreshTokenService.saveRefreshToken(email, refreshToken);
+
+            // 응답 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", accessToken);
+            headers.add("RefreshToken", refreshToken);
+
+
+            ApiResponse<LoginResponseDto> apiResponse = new ApiResponse<>(null, ApiResponseMessage.USER_LOGIN);
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(apiResponse);
+
+        } catch (AuthenticationException e) {
+            // 인증 예외 처리
+            log.error("Authentication failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (Exception e) {
-            log.error("Login failed", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(null, ApiResponseMessage.ERROR));
+            // 일반 예외 처리
+            log.error("Login error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-
-
-
-
 }
+
+
+
+
+
 
