@@ -21,10 +21,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 @RequiredArgsConstructor
 @Slf4j(topic = "JWT 검증 및 인가")
@@ -37,7 +39,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
         try {
-            // 로그아웃 요청 처리
             if (isLogoutRequest(req)) {
                 handleLogout(req, res);
                 return; // 로그아웃 처리 후 필터 체인의 나머지 부분을 실행하지 않도록 합니다.
@@ -47,42 +48,84 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             String refreshToken = jwtUtil.getRefreshTokenFromHeader(req);
 
             if (StringUtils.hasText(accessToken)) {
-                String tokenValidationResult = jwtUtil.validateToken(accessToken);
-                if (tokenValidationResult != null) {
-                    // 토큰 검증 실패 시
-                    log.error("Token Error: " + tokenValidationResult);
-                    if (!StringUtils.hasText(refreshToken)) {
-                        log.error("Refresh Token is missing");
-                        throw new AuthenticationCredentialsNotFoundException("Refresh Token is missing");
-                    }
-                } else {
-                    // 토큰이 유효한 경우
-                    Claims info = jwtUtil.getUserInfoFromToken(accessToken);
-                    try {
-                        setAuthentication(info.getSubject()); // 사용자 인증 설정
-                    } catch (Exception e) {
-                        log.error(e.getMessage());
-                        throw new AuthenticationServiceException("Authentication failed", e);
-                    }
-                }
+                processAccessToken(accessToken, refreshToken, req, res, filterChain);
+            } else if (StringUtils.hasText(refreshToken)) {
+                validateRefreshToken(refreshToken, req, res, filterChain);
+            } else {
+                filterChain.doFilter(req, res); // 토큰이 없는 경우 필터 체인의 다음 필터로 요청을 전달합니다.
             }
 
-            filterChain.doFilter(req, res);
-
-        } catch (AuthenticationCredentialsNotFoundException | AuthenticationServiceException e) {
-            handleExceptionInFilter(e, res);
+        } catch (Exception e) {
+            log.error("Exception occurred during filter processing", e);
+            handleExceptionInFilter(e, res); // 예외 발생 시 적절한 처리
         }
     }
 
-    private void handleExceptionInFilter(Exception e, HttpServletResponse res) throws IOException {
-        // 예외를 처리하여 응답을 직접 작성
-        ApiResponse<Void> apiResponse = new ApiResponse<>(null, ApiResponseMessage.ERROR);
-        ResponseEntity<ApiResponse<Void>> responseEntity = ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(apiResponse);
 
-        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        res.setContentType("application/json");
-        res.setCharacterEncoding("UTF-8");
-        res.getWriter().write(new ObjectMapper().writeValueAsString(responseEntity.getBody()));
+    private void processAccessToken(String accessToken, String refreshToken, HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws IOException, ServletException {
+        String tokenValidationResult = jwtUtil.validateToken(accessToken);
+
+        if (tokenValidationResult != null) {
+            handleExpiredAccessToken(refreshToken, req, res, filterChain);
+        } else {
+            setAuthentication(jwtUtil.getUserInfoFromToken(accessToken).getSubject());
+            filterChain.doFilter(req, res);
+        }
+    }
+
+    private void handleExpiredAccessToken(String refreshToken, HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws IOException, ServletException {
+        if (StringUtils.hasText(refreshToken)) {
+            validateRefreshToken(refreshToken, req, res, filterChain);
+        } else {
+            log.error("Refresh Token is missing");
+            throw new AuthenticationCredentialsNotFoundException("Refresh Token is missing");
+        }
+    }
+
+    private void validateRefreshToken(String refreshToken, HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws IOException, ServletException {
+        String refreshTokenValidation = jwtUtil.validateToken(refreshToken);
+
+        if (refreshTokenValidation == null) {
+            Claims claims = jwtUtil.getUserInfoFromToken(refreshToken);
+            log.info("Claims: " + claims.toString());
+
+            Object emailObj = claims.get("email");
+            String email = emailObj != null ? emailObj.toString() : null;
+
+            log.info("Validating refresh token with email: " + email);
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+            if (userDetails == null) {
+                log.error("User details not found for email: " + email);
+                throw new UsernameNotFoundException("User not found for email: " + email);
+            }
+
+            String newAccessToken = jwtUtil.createAccessToken(email, userDetails.getAuthorities());
+            res.setHeader("Authorization", newAccessToken);
+
+            setAuthentication(email);
+        } else {
+            log.error("Invalid refresh token: " + refreshTokenValidation);
+            throw new AuthenticationCredentialsNotFoundException("Invalid refresh token");
+        }
+
+        filterChain.doFilter(req, res);
+    }
+
+
+    private void handleExceptionInFilter(Exception e, HttpServletResponse res) throws IOException {
+        if (!res.isCommitted()) { // 응답이 이미 커밋된 상태가 아니면
+            ApiResponse<Void> apiResponse = new ApiResponse<>(null, ApiResponseMessage.ERROR);
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            res.setContentType("application/json");
+            res.setCharacterEncoding("UTF-8");
+            try (PrintWriter writer = res.getWriter()) {
+                writer.write(new ObjectMapper().writeValueAsString(apiResponse));
+            }
+        } else {
+            log.error("Response already committed, unable to handle exception: {}", e.getMessage());
+        }
     }
 
     private boolean isLogoutRequest(HttpServletRequest request) {
@@ -96,7 +139,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             if (accessToken != null) {
                 refreshTokenService.invalidateToken(accessToken);
             }
-            // 리프레시 토큰 무효화 및 삭제
             if (refreshToken != null) {
                 refreshTokenService.invalidateToken(refreshToken);
                 Claims claims = jwtUtil.getUserInfoFromToken(refreshToken);
@@ -116,19 +158,15 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
     }
 
-        // 인증 처리
-        public void setAuthentication (String email){
-            SecurityContext context = SecurityContextHolder.createEmptyContext();
-            Authentication authentication = createAuthentication(email); //구현체 반환
-            context.setAuthentication(authentication); // 다시담기
-
-            SecurityContextHolder.setContext(context);
-        }
-
-        // 인증 객체 생성
-        private Authentication createAuthentication (String username){
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        }
-
+    public void setAuthentication(String email) {
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        Authentication authentication = createAuthentication(email);
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
     }
+
+    private Authentication createAuthentication(String username) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    }
+}

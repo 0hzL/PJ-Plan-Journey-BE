@@ -160,7 +160,6 @@ public class UserService {
     public void updatePassword(UpdatePasswordRequestDto requestDto) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String email = userDetails.getUsername();
-        log.info(email);
 
         User user = userRepository.findByEmail(email).orElseThrow(()->
                 new RuntimeException("user 없음"));
