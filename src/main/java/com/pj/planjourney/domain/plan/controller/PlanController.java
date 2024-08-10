@@ -1,14 +1,12 @@
 package com.pj.planjourney.domain.plan.controller;
 
 import com.pj.planjourney.domain.plan.dto.*;
-import com.pj.planjourney.domain.plan.entity.Plan;
 import com.pj.planjourney.domain.plan.service.PlanService;
 import com.pj.planjourney.global.auth.service.UserDetailsImpl;
 import com.pj.planjourney.global.common.response.ApiResponse;
 import com.pj.planjourney.global.common.response.ApiResponseMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +16,10 @@ import java.util.List;
 @RequestMapping("/plans")
 @RequiredArgsConstructor
 public class PlanController {
+
     private final PlanService planService;
 
+    @Secured("ROLE_USER")
     @PostMapping
     public ApiResponse<CreatePlanResponseDto> savePlan(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                        @RequestBody CreatePlanRequestDto request) {
