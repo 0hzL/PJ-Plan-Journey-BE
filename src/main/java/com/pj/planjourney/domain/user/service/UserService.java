@@ -182,7 +182,7 @@ public class UserService {
         List<UserPlan> userPlans = userPlanRepository.getUserPlainsByUserId(userId);
         List<MyUserPlanListResponseDto> responseDtoList = userPlans.stream()
                 .map(userPlan -> new MyUserPlanListResponseDto(
-                        userPlan.getId(),
+                        userPlan.getPlan().getId(),
                         userPlan.getUser().getNickname(),
                         userPlan.getPlan().getCity().getName(),
                         userPlan.getPlan().getTitle(),
