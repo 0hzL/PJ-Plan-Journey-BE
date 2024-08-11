@@ -18,13 +18,6 @@ public class NotificationController {
     private final NotificationService notificationService;
 
 
-    // 친구 초대 알림 생성
-    @PostMapping("/friend-invite")
-    public ApiResponse<Void> sendFriendInviteNotification(@RequestParam Long recipientId,
-                                                          @RequestParam Long senderId) {
-        notificationService.sendFriendInviteNotification(recipientId, senderId);
-        return new ApiResponse<>(null, ApiResponseMessage.SUCCESS);
-    }
     // 모든 알림
     @GetMapping
     public ApiResponse<List<NotificationListsDto>> getAllNotifications(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -40,9 +33,9 @@ public class NotificationController {
     }
 
     // 알림 읽음 처리
-    @PatchMapping("/{id}/read")
-    public ApiResponse<Void> markNotificationAsRead(@PathVariable Long id) {
-        notificationService.markAsRead(id);
+    @PatchMapping("/read")
+    public ApiResponse<Void> markNotificationAsRead(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        notificationService.markAsRead(userDetails.getUser().getId());
         return new ApiResponse<>(null, ApiResponseMessage.SUCCESS);
     }
 

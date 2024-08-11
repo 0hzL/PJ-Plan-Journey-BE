@@ -1,9 +1,6 @@
 package com.pj.planjourney.domain.friend.service;
 
-import com.pj.planjourney.domain.friend.dto.FriendDeleteDto;
-import com.pj.planjourney.domain.friend.dto.FriendRequestResponseDto;
-import com.pj.planjourney.domain.friend.dto.FriendRequestSendDto;
-import com.pj.planjourney.domain.friend.dto.FriendResponseDto;
+import com.pj.planjourney.domain.friend.dto.*;
 import com.pj.planjourney.domain.friend.entity.Friend;
 import com.pj.planjourney.domain.friend.repository.FriendRepository;
 import com.pj.planjourney.domain.friendrequest.entity.FriendRequest;
@@ -28,7 +25,7 @@ public class FriendService {
     private final NotificationService notificationService;
 
     @Transactional
-    public void sendFriendRequest(FriendRequestSendDto requestCreateDto, Long userId) {
+    public FriendRequestSendResponseDto sendFriendRequest(FriendRequestSendDto requestCreateDto, Long userId) {
         User sender = getUserById(userId);
         User receiver = userRepository.findByEmail(requestCreateDto.getReceiverEmail())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
@@ -38,8 +35,10 @@ public class FriendService {
         }
 
         FriendRequest friendRequest = new FriendRequest(sender, receiver);
-        friendRequestRepository.save(friendRequest);
+        FriendRequest savedFriendRequest = friendRequestRepository.save(friendRequest);
         notificationService.sendFriendRequestNotification(receiver.getId(), sender.getId());
+
+        return new FriendRequestSendResponseDto(savedFriendRequest, sender);
     }
 
 
@@ -64,7 +63,7 @@ public class FriendService {
 
         friendRepository.save(friend1);
         friendRepository.save(friend2);
-        notificationService.sendFriendAcceptedNotification(receiver.getId(),sender.getId());
+        notificationService.sendFriendAcceptedNotification(receiver.getId(), sender.getId());
     }
 
     @Transactional
@@ -80,6 +79,7 @@ public class FriendService {
         return friendRepository.findByUser(user).stream()
                 .map(FriendResponseDto::new).toList();
     }
+
     @Transactional
     public void deleteFriend(Long userId, FriendDeleteDto friendDeleteDto) {
         User user = getUserById(userId);
