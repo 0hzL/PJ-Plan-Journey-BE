@@ -1,13 +1,12 @@
 package com.pj.planjourney.domain.plan.dto;
 
-import com.pj.planjourney.domain.city.entity.City;
-import com.pj.planjourney.domain.comment.entity.Comment;
 import com.pj.planjourney.domain.plan.entity.Plan;
 import com.pj.planjourney.domain.plandetail.entity.PlanDetail;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,6 +23,8 @@ public class PlanInfoResponseDto {
     private List<PlanDetail> planDetails;
     private LocalDateTime createAt;
     private Integer likeCount;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
 
     public PlanInfoResponseDto(Plan plan, List<PlanDetail> planDetails) {
@@ -36,5 +37,7 @@ public class PlanInfoResponseDto {
         this.planDetails = planDetails;
         this.createAt = LocalDateTime.now();
         this.likeCount = plan.getLikeCount();
+        this.startDate = plan.getStartDate();
+        this.endDate = plan.getEndDate();
     }
 }

@@ -2,7 +2,6 @@ package com.pj.planjourney.domain.friend.controller;
 
 import com.pj.planjourney.domain.friend.dto.*;
 import com.pj.planjourney.domain.friend.service.FriendService;
-import com.pj.planjourney.domain.plan.entity.Plan;
 import com.pj.planjourney.global.auth.service.UserDetailsImpl;
 import com.pj.planjourney.global.common.response.ApiResponse;
 import com.pj.planjourney.global.common.response.ApiResponseMessage;
@@ -40,15 +39,15 @@ public class FriendController {
         return new ApiResponse<>(requests, ApiResponseMessage.RECEIVED_RETRIEVED);
     }
 
-    @PostMapping("/accept/{planId}")
-    public ApiResponse<Void> acceptFriendRequest(@PathVariable Long planId) {
-        friendService.acceptFriendRequest(planId);
+    @PostMapping("/accept/{friendRequestId}")
+    public ApiResponse<Void> acceptFriendRequest(@PathVariable Long friendRequestId) {
+        friendService.acceptFriendRequest(friendRequestId);
         return new ApiResponse<>(null, ApiResponseMessage.REQUEST_ACCEPTED);
     }
 
-    @PostMapping("/reject/{planId}")
-    public ApiResponse<Void> rejectFriendRequest(@PathVariable Long planId) {
-        friendService.rejectFriendRequest(planId);
+    @PostMapping("/reject/{friendRequestId}")
+    public ApiResponse<Void> rejectFriendRequest(@PathVariable Long friendRequestId) {
+        friendService.rejectFriendRequest(friendRequestId);
         return new ApiResponse<>(null, ApiResponseMessage.REQUEST_REJECTED);
     }
 
