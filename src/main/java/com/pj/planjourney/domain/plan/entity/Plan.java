@@ -83,6 +83,8 @@ public class Plan extends Timestamped {
         this.title = request.getTitle();
         this.isPublished = false;
         this.city = city;
+        this.startDate = request.getStartDate();
+        this.endDate = request.getEndDate();
     }
 
     public void addPlanDetail(PlanDetail planDetail) {
