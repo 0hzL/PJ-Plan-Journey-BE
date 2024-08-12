@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class CommentService {
     private final PlanRepository planRepository;
     private final UserRepository userRepository;
 
-    public CommentCreateResponseDto createComment(CommentCreateRequestDto requestDto, Long planId, Long userId) {
+    public CommentCreateResponseDto createComment(CommentCreateRequestDto requestDto, Long userId, Long planId) {
         Plan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.PLAN_NOT_FOUND));
         User user = userRepository.findById(userId)
@@ -39,9 +38,7 @@ public class CommentService {
         List<Comment> comments = commentRepository.findByPlanId(planId);
 
         return comments.stream()
-                .map(CommentListResponseDto::new)
-                .collect(Collectors.toList());
-
+                .map(CommentListResponseDto::new).toList();
     }
 
     public CommentUpdateResponseDto updateComment(Long planId, Long commentId, Long userId, CommentUpdateRequestDto requestDto) {
@@ -72,8 +69,7 @@ public class CommentService {
     }
 
     private Comment getCommentById(Long commentId) {
-        Comment comment = commentRepository.findById(commentId)
+        return commentRepository.findById(commentId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.COMMENT_NOT_FOUND));
-        return comment;
     }
 }
