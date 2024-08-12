@@ -58,11 +58,11 @@ public class FriendController {
         return new ApiResponse<>(friends, ApiResponseMessage.FRIENDS_RETRIEVED);
     }
 
-    @DeleteMapping
+    @DeleteMapping("{/friendId}")
     public ApiResponse<Void> deleteFriend(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                          @RequestBody FriendDeleteDto friendDeleteDto) {
+                                          @PathVariable Long friendId) {
         Long userId = userDetails.getUser().getId();
-        friendService.deleteFriend(userId, friendDeleteDto);
+        friendService.deleteFriend(userId, friendId);
         return new ApiResponse<>(null, ApiResponseMessage.FRIEND_DELETED);
     }
 }
