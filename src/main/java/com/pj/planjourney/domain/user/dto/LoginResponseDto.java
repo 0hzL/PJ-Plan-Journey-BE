@@ -1,15 +1,16 @@
 package com.pj.planjourney.domain.user.dto;
 
+import com.pj.planjourney.domain.user.entity.User;
 import lombok.Getter;
 
 @Getter
 public class LoginResponseDto {
 
-    private String accessToken;
-    private String refreshToken;
+    private String nickname;
+    private String email;
 
-    public LoginResponseDto(String accessToken, String refreshToken) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
+    public LoginResponseDto(String nickname, String email) {
+        this.nickname = nickname;
+        this.email = email;
     }
 }
