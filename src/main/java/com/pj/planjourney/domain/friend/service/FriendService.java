@@ -69,7 +69,10 @@ public class FriendService {
 
         friendRepository.save(friend1);
         friendRepository.save(friend2);
+
         notificationService.sendFriendAcceptedNotification(receiver.getId(), sender.getId());
+
+        friendRequestRepository.delete(friendRequest);
     }
 
     @Transactional
