@@ -71,6 +71,7 @@ jobs:
             docker stop plan_journey_server || true
             docker rm plan_journey_server || true
             docker run -d --name plan_journey_server -p 8080:8080 ${{ secrets.DOCKER_NAME }}/plan-journey:${{ github.sha }}
+            docker image prune -a
 
       # Remove Github Action IP to Security group
       - name: Remove Github Actions IP to Security group
