@@ -81,6 +81,8 @@ public class FriendService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.REQUEST_NOT_FOUND));
 
         friendRequest.reject();
+
+        friendRequestRepository.delete(friendRequest);
     }
 
     public List<FriendResponseDto> getFriends(Long userId) {
