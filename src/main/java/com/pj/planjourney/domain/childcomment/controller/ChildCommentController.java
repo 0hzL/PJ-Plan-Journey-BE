@@ -28,9 +28,9 @@ public class ChildCommentController {
         return new ApiResponse<>(responseDto, ApiResponseMessage.CHILD_COMMENT_CREATE);
     }
 
-    @GetMapping("/child-comments/{childCommentId}")
-    public ApiResponse<List<ChildCommentListResponseDto>> getAllChildComment(@PathVariable Long childCommentId) {
-        List<ChildCommentListResponseDto> responseDto = childCommentService.getAllChildComment(childCommentId);
+    @GetMapping("/child-comments/{commentId}")
+    public ApiResponse<List<ChildCommentListResponseDto>> getAllChildComment(@PathVariable Long commentId) {
+        List<ChildCommentListResponseDto> responseDto = childCommentService.getAllChildComment(commentId);
         return new ApiResponse<>(responseDto, ApiResponseMessage.SUCCESS);
     }
 
