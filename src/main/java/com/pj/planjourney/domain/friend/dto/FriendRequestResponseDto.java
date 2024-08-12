@@ -9,6 +9,7 @@ import lombok.Setter;
 public class FriendRequestResponseDto {
     private Long senderId;
     private Long receiverId;
+    private Long friendRequestId;
     private String status;
 
 
@@ -16,5 +17,6 @@ public class FriendRequestResponseDto {
         this.senderId = friendRequest.getSender().getId();
         this.receiverId = friendRequest.getReceiver().getId();
         this.status = friendRequest.getStatus();
+        this.friendRequestId = friendRequest.getId();
     }
 }
