@@ -92,9 +92,9 @@ public class FriendService {
     }
 
     @Transactional
-    public void deleteFriend(Long userId, FriendDeleteDto friendDeleteDto) {
+    public void deleteFriend(Long userId, Long friendId) {
         User user = getUserById(userId);
-        User friend = userRepository.findById(friendDeleteDto.getFriendId())
+        User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
         Friend friendship1 = friendRepository.findByUserAndFriend(user, friend);
