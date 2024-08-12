@@ -1,5 +1,6 @@
 package com.pj.planjourney.domain.plandetail.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pj.planjourney.domain.plan.entity.Plan;
 import com.pj.planjourney.domain.plandetail.dto.EditPlanDetailRequestDto;
 import jakarta.persistence.*;
@@ -31,6 +32,7 @@ public class PlanDetail {
 
     @ManyToOne
     @JoinColumn(name = "plan_id")
+    @JsonIgnore
     private Plan plan;
 
     public PlanDetail(PlanDetail original, Plan newPlan) {

@@ -1,9 +1,6 @@
 package com.pj.planjourney.domain.friend.controller;
 
-import com.pj.planjourney.domain.friend.dto.FriendDeleteDto;
-import com.pj.planjourney.domain.friend.dto.FriendRequestResponseDto;
-import com.pj.planjourney.domain.friend.dto.FriendRequestSendDto;
-import com.pj.planjourney.domain.friend.dto.FriendResponseDto;
+import com.pj.planjourney.domain.friend.dto.*;
 import com.pj.planjourney.domain.friend.service.FriendService;
 import com.pj.planjourney.global.auth.service.UserDetailsImpl;
 import com.pj.planjourney.global.common.response.ApiResponse;
@@ -21,10 +18,11 @@ public class FriendController {
     private final FriendService friendService;
 
     @PostMapping("/request")
-    public ApiResponse<Void> sendFriendRequest(@RequestBody FriendRequestSendDto requestCreateDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ApiResponse<FriendRequestSendResponseDto> sendFriendRequest(@RequestBody FriendRequestSendDto requestCreateDto,
+                                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long userId = userDetails.getUser().getId();
-        friendService.sendFriendRequest(requestCreateDto, userId);
-        return new ApiResponse<>(null, ApiResponseMessage.REQUEST_SENT);
+        FriendRequestSendResponseDto friendRequestSendResponseDto = friendService.sendFriendRequest(requestCreateDto, userId);
+        return new ApiResponse<>(friendRequestSendResponseDto, ApiResponseMessage.REQUEST_SENT);
     }
 
     @GetMapping("/sentLists")
@@ -41,17 +39,15 @@ public class FriendController {
         return new ApiResponse<>(requests, ApiResponseMessage.RECEIVED_RETRIEVED);
     }
 
-    @PostMapping("/accept")
-    public ApiResponse<Void> acceptFriendRequest(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        Long userId = userDetails.getUser().getId();
-        friendService.acceptFriendRequest(userId);
+    @PostMapping("/accept/{friendRequestId}")
+    public ApiResponse<Void> acceptFriendRequest(@PathVariable Long friendRequestId) {
+        friendService.acceptFriendRequest(friendRequestId);
         return new ApiResponse<>(null, ApiResponseMessage.REQUEST_ACCEPTED);
     }
 
-    @PostMapping("/reject")
-    public ApiResponse<Void> rejectFriendRequest(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        Long userId = userDetails.getUser().getId();
-        friendService.rejectFriendRequest(userId);
+    @PostMapping("/reject/{friendRequestId}")
+    public ApiResponse<Void> rejectFriendRequest(@PathVariable Long friendRequestId) {
+        friendService.rejectFriendRequest(friendRequestId);
         return new ApiResponse<>(null, ApiResponseMessage.REQUEST_REJECTED);
     }
 
@@ -63,7 +59,8 @@ public class FriendController {
     }
 
     @DeleteMapping
-    public ApiResponse<Void> deleteFriend(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody FriendDeleteDto friendDeleteDto) {
+    public ApiResponse<Void> deleteFriend(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                          @RequestBody FriendDeleteDto friendDeleteDto) {
         Long userId = userDetails.getUser().getId();
         friendService.deleteFriend(userId, friendDeleteDto);
         return new ApiResponse<>(null, ApiResponseMessage.FRIEND_DELETED);

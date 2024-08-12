@@ -1,6 +1,7 @@
 package com.pj.planjourney.domain.notification.service;
 
 import com.pj.planjourney.domain.notification.dto.NotificationListsDto;
+import com.pj.planjourney.domain.notification.dto.NotificationMessage;
 import com.pj.planjourney.domain.notification.entity.Notification;
 import com.pj.planjourney.domain.notification.repository.NotificationRepository;
 import com.pj.planjourney.domain.user.entity.User;
@@ -9,6 +10,7 @@ import com.pj.planjourney.global.common.exception.BusinessLogicException;
 import com.pj.planjourney.global.common.exception.ExceptionCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.List;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     // 친구 요청 알림 생성
     @Transactional
@@ -25,6 +28,12 @@ public class NotificationService {
         User sender = findBySenderId(senderId);
         String message = sender.getNickname() + "님이 친구 요청을 보냈습니다.";
         createNotification(message, "FRIEND_REQUEST", recipientId);
+
+        messagingTemplate.convertAndSendToUser(
+                recipientId.toString(),  // 수신자의 유저 ID를 사용
+                "/queue/notifications",  // 목적지 경로 설정
+                new NotificationMessage(message)
+        );
     }
 
     // 친구 요청 수락 알림 생성
@@ -33,6 +42,12 @@ public class NotificationService {
         User sender = findBySenderId(senderId);
         String message = sender.getNickname() + "님이 친구 요청을 수락했습니다.";
         createNotification(message, "FRIEND_ACCEPTED", recipientId);
+
+        messagingTemplate.convertAndSendToUser(
+                recipientId.toString(),
+                "/queue/notifications",
+                new NotificationMessage(message)
+        );
     }
     // 친구 요청 거절 알림 생성
     @Transactional
