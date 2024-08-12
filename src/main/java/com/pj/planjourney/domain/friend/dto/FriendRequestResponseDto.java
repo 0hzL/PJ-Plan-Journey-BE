@@ -11,6 +11,8 @@ public class FriendRequestResponseDto {
     private Long receiverId;
     private Long friendRequestId;
     private String status;
+    private String senderNickname;
+    private String receiverNickname;
 
 
     public FriendRequestResponseDto(FriendRequest friendRequest) {
@@ -18,5 +20,7 @@ public class FriendRequestResponseDto {
         this.receiverId = friendRequest.getReceiver().getId();
         this.status = friendRequest.getStatus();
         this.friendRequestId = friendRequest.getId();
+        this.senderNickname = friendRequest.getSender().getNickname();
+        this.receiverNickname = friendRequest.getReceiver().getNickname();
     }
 }
