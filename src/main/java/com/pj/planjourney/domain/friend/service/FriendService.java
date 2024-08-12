@@ -48,6 +48,12 @@ public class FriendService {
                 .map(FriendRequestResponseDto::new).toList();
     }
 
+    public List<FriendRequestResponseDto> getReceivedFriendRequests(Long userId) {
+        User user = getUserById(userId);
+        return friendRequestRepository.findByReceiver(user).stream()
+                .map(FriendRequestResponseDto::new).toList();
+    }
+
     @Transactional
     public void acceptFriendRequest(Long requestId) {
         FriendRequest friendRequest = friendRequestRepository.findById(requestId)
@@ -96,12 +102,6 @@ public class FriendService {
         if (friendship2 != null) {
             friendRepository.delete(friendship2);
         }
-    }
-
-    public List<FriendRequestResponseDto> getReceivedFriendRequests(Long userId) {
-        User user = getUserById(userId);
-        return friendRequestRepository.findByReceiver(user).stream()
-                .map(FriendRequestResponseDto::new).toList();
     }
 
     private User getUserById(Long userId) {
