@@ -1,7 +1,8 @@
 package com.pj.planjourney.domain.notification.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pj.planjourney.domain.notification.dto.NotificationListsDto;
-import com.pj.planjourney.domain.notification.dto.NotificationMessage;
 import com.pj.planjourney.domain.notification.entity.Notification;
 import com.pj.planjourney.domain.notification.repository.NotificationRepository;
 import com.pj.planjourney.domain.user.entity.User;
@@ -10,7 +11,7 @@ import com.pj.planjourney.global.common.exception.BusinessLogicException;
 import com.pj.planjourney.global.common.exception.ExceptionCode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,20 +21,17 @@ import java.util.List;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     // 친구 요청 알림 생성
     @Transactional
     public void sendFriendRequestNotification(Long recipientId, Long senderId) {
         User sender = findBySenderId(senderId);
         String message = sender.getNickname() + "님이 친구 요청을 보냈습니다.";
-        createNotification(message, "FRIEND_REQUEST", recipientId);
+        Notification notification = createNotification(message, "FRIEND", recipientId);
 
-        messagingTemplate.convertAndSendToUser(
-                recipientId.toString(),  // 수신자의 유저 ID를 사용
-                "/queue/notifications",  // 목적지 경로 설정
-                new NotificationMessage(message)
-        );
+        publishNotification(recipientId, notification);
     }
 
     // 친구 요청 수락 알림 생성
@@ -41,20 +39,20 @@ public class NotificationService {
     public void sendFriendAcceptedNotification(Long recipientId, Long senderId) {
         User sender = findBySenderId(senderId);
         String message = sender.getNickname() + "님이 친구 요청을 수락했습니다.";
-        createNotification(message, "FRIEND_ACCEPTED", recipientId);
+        Notification notification = createNotification(message, "FRIEND", recipientId);
 
-        messagingTemplate.convertAndSendToUser(
-                recipientId.toString(),
-                "/queue/notifications",
-                new NotificationMessage(message)
-        );
+        publishNotification(recipientId, notification);
+
     }
+
     // 친구 요청 거절 알림 생성
     @Transactional
     public void sendFriendRejectedNotification(Long recipientId, Long senderId) {
         User sender = findBySenderId(senderId);
         String message = sender.getNickname() + "님이 친구 요청을 거절했습니다.";
-        createNotification(message, "FRIEND_REJECTED", recipientId);
+        Notification notification = createNotification(message, "FRIEND_REJECTED", recipientId);
+
+        publishNotification(recipientId, notification);
     }
 
     // 여행 하루 전 리마인드 알림 생성
@@ -67,8 +65,10 @@ public class NotificationService {
     @Transactional
     public void sendFriendInviteNotification(Long recipientId, Long senderId) {
         User sender = findBySenderId(senderId);
-        String message = sender.getNickname() + "님이 여행에 초대했습니다.";
-        createNotification(message, "FRIEND_INVITE", recipientId);
+        String message = sender.getNickname() + "님이 여행일정 실시간 편집에 초대했습니다.";
+        Notification notification = createNotification(message, "FRIEND_INVITE", recipientId);
+
+        publishNotification(recipientId, notification);
     }
 
     // 모든 알림 가져오기
@@ -98,14 +98,26 @@ public class NotificationService {
 
     // 알림 생성
     @Transactional
-    public void createNotification(String message, String noticeType, Long userId) {
+    public Notification createNotification(String message, String noticeType, Long userId) {
         User user = findBySenderId(userId);
         Notification notification = new Notification(message, noticeType, user);
-        notificationRepository.save(notification);
+        return notificationRepository.save(notification);
     }
 
     private User findBySenderId(Long senderId) {
         return userRepository.findById(senderId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.SENDER_NOT_FOUND));
+    }
+
+    private void publishNotification(Long recipientId, Notification notification) {
+        try {
+            // Notification 객체를 JSON 문자열로 변환
+            String notificationJson = objectMapper.writeValueAsString(notification);
+            // Redis 채널에 JSON 문자열을 발행
+            redisTemplate.convertAndSend("notification:" + recipientId, notificationJson);
+        } catch (JsonProcessingException e) {
+            // JSON 변환 실패 시 예외 처리
+            throw new RuntimeException("알림을 JSON으로 변환하는 데 실패했습니다.", e);
+        }
     }
 }
