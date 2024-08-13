@@ -147,7 +147,7 @@ public class UserController {
             );
 
             // LoginResponseDto 생성
-            LoginResponseDto loginDto = new LoginResponseDto(user.getNickname(),user.getEmail());
+            LoginResponseDto loginDto = new LoginResponseDto(user.getNickname(),user.getEmail(),accessToken, refreshToken);
 
             // 응답 헤더 설정
             HttpHeaders headers = new HttpHeaders();
