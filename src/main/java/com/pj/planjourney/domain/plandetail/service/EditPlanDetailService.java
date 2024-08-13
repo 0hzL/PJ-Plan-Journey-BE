@@ -4,16 +4,20 @@ import com.pj.planjourney.domain.plan.entity.Plan;
 import com.pj.planjourney.domain.plan.repository.PlanRepository;
 import com.pj.planjourney.domain.plandetail.dto.EditPlanDetailRequestDto;
 import com.pj.planjourney.domain.plandetail.dto.EditPlanDetailResponseDto;
+import com.pj.planjourney.domain.plandetail.dto.InsertRequestDto;
 import com.pj.planjourney.domain.plandetail.dto.PlanDetailDto;
 import com.pj.planjourney.domain.plandetail.entity.EditPlanType;
 import com.pj.planjourney.domain.plandetail.entity.PlanDetail;
 import com.pj.planjourney.domain.plandetail.repository.PlanDetailRepository;
+import com.pj.planjourney.global.common.exception.BusinessLogicException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.pj.planjourney.global.common.exception.ExceptionCode.PLAN_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -37,13 +41,17 @@ public class EditPlanDetailService {
 
     public List<PlanDetailDto> insertPlan(EditPlanDetailRequestDto request) {
         // 해당 날짜의 모든 PlanDetail 가져오기
-        Plan plan = planRepository.findById(request.getPlanId()).orElseThrow();
+        Plan plan = findByPlanId(request.getPlanId());
         List<PlanDetail> planDetails = plan.getPlanDetails();
 
-        // 새로운 PlanDetail 생성 및 저장
-        PlanDetail newDetail = new PlanDetail(planDetails.size() + 1, plan, request);
-        planDetailRepository.save(newDetail);
-        planDetails.add(newDetail);
+        System.out.println(request.getDetails().get(0).getPlaceName());
+        for (InsertRequestDto detail : request.getDetails()) {
+            // 새로운 PlanDetail 생성 및 저장
+            PlanDetail newDetail = new PlanDetail(planDetails.size() + 1, plan, detail);
+            planDetailRepository.save(newDetail);
+            planDetails.add(newDetail);
+            System.out.println(newDetail.getPlaceName());
+        }
 
         return planDetails.stream().map(PlanDetailDto::new).toList();
     }
@@ -121,5 +129,10 @@ public class EditPlanDetailService {
         return planDetails.stream()
                 .filter(pd -> pd.getSequence().equals(fromSeq))
                 .findFirst().orElseThrow();
+    }
+
+    private Plan findByPlanId(Long planId) {
+        return planRepository.findById(planId)
+                .orElseThrow(() -> new BusinessLogicException(PLAN_NOT_FOUND));
     }
 }

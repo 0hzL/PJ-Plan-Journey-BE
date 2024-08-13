@@ -4,6 +4,8 @@ import com.pj.planjourney.domain.plandetail.entity.EditPlanType;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 public class EditPlanDetailRequestDto {
@@ -18,4 +20,7 @@ public class EditPlanDetailRequestDto {
     private String placeName;
     private Double latitude;
     private Double longitude;
+
+    private final List<InsertRequestDto> details = new ArrayList<>();
+
 }

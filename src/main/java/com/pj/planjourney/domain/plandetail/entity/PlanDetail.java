@@ -2,7 +2,7 @@ package com.pj.planjourney.domain.plandetail.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pj.planjourney.domain.plan.entity.Plan;
-import com.pj.planjourney.domain.plandetail.dto.EditPlanDetailRequestDto;
+import com.pj.planjourney.domain.plandetail.dto.InsertRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,9 +53,9 @@ public class PlanDetail {
         this.plan = plan;
     }
 
-    public PlanDetail(Integer sequence, Plan plan, EditPlanDetailRequestDto request) {
+    public PlanDetail(Integer sequence, Plan plan, InsertRequestDto request) {
         this.sequence = sequence;
-        this.date = request.getFromDate();
+        this.date = request.getDate();
         this.placeName = request.getPlaceName();
         this.latitude = request.getLatitude();
         this.longitude = request.getLongitude();
