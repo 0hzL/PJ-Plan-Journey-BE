@@ -4,17 +4,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @NoArgsConstructor
 public class EditPlanDetailResponseDto {
 
     private Long planId;
-    private final Map<LocalDate, List<PlanDetailDto>> groupedByDate = new HashMap<>();
+    private final Map<LocalDate, List<PlanDetailDto>> groupedByDate = new TreeMap<>();
 
     public EditPlanDetailResponseDto(List<PlanDetailDto> planDetails, Long planId) {
         this.planId = planId;
