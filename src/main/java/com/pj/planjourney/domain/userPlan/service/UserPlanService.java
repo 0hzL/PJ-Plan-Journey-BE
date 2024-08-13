@@ -2,8 +2,10 @@ package com.pj.planjourney.domain.userPlan.service;
 
 import com.pj.planjourney.domain.friend.entity.Friend;
 import com.pj.planjourney.domain.friend.repository.FriendRepository;
+import com.pj.planjourney.domain.notification.service.NotificationService;
 import com.pj.planjourney.domain.plan.entity.Plan;
 import com.pj.planjourney.domain.plan.repository.PlanRepository;
+import com.pj.planjourney.domain.sse.service.EventService;
 import com.pj.planjourney.domain.user.entity.User;
 import com.pj.planjourney.domain.user.repository.UserRepository;
 import com.pj.planjourney.domain.userPlan.dto.AcceptInvitePlanRequestDto;
@@ -29,11 +31,12 @@ public class UserPlanService {
     private final PlanRepository planRepository;
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
+    private final NotificationService notificationService;
 
     /**
      * 해당 일정으로 친구를 초대하는 메소드
      *
-     * @param planId 초대할 일정 id
+     * @param planId  초대할 일정 id
      * @param request 초대할 친구들 id 정보가 담겨있는 dto
      */
     @Transactional
@@ -49,6 +52,8 @@ public class UserPlanService {
 
             UserPlan userPlan = new UserPlan(friend, plan, InvitedStatus.PENDING);
             userPlanRepository.save(userPlan);
+
+            notificationService.sendFriendInviteNotification(friendId ,user.getId());
         }
     }
 
