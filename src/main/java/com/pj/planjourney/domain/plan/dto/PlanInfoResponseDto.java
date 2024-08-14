@@ -18,7 +18,7 @@ public class PlanInfoResponseDto {
     private String title;
     private Boolean isPublished;
     private LocalDateTime publishedAt;
-    private String nickName;
+    private String author;
     private String cityName;
     private List<PlanDetail> planDetails;
     private LocalDateTime createAt;
@@ -32,7 +32,7 @@ public class PlanInfoResponseDto {
         this.title = plan.getTitle();
         this.isPublished = plan.getIsPublished();
         this.publishedAt = plan.getPublishedAt();
-//        this.nickName =
+        this.author = plan.getAuthor();
         this.cityName = plan.getCity().getName();
         this.planDetails = planDetails;
         this.createAt = LocalDateTime.now();
