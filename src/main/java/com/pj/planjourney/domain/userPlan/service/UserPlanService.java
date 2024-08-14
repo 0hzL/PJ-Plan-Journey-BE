@@ -52,8 +52,6 @@ public class UserPlanService {
 
             UserPlan userPlan = new UserPlan(friend, plan, InvitedStatus.PENDING);
             userPlanRepository.save(userPlan);
-
-            notificationService.sendFriendInviteNotification(friendId ,user.getId());
         }
     }
 
