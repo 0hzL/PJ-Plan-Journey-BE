@@ -6,6 +6,7 @@ import com.pj.planjourney.global.auth.service.UserDetailsImpl;
 import com.pj.planjourney.global.common.response.ApiResponse;
 import com.pj.planjourney.global.common.response.ApiResponseMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,9 +34,11 @@ public class FriendController {
     }
 
     @GetMapping("/receivedLists")
-    public ApiResponse<List<FriendRequestResponseDto>> getReceivedFriendRequests(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ApiResponse<Page<FriendRequestResponseDto>> getReceivedFriendRequests(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                                 @RequestParam(defaultValue = "0") int page,
+                                                                                 @RequestParam(defaultValue = "10") int size) {
         Long userId = userDetails.getUser().getId();
-        List<FriendRequestResponseDto> requests = friendService.getReceivedFriendRequests(userId);
+        Page<FriendRequestResponseDto> requests = friendService.getReceivedFriendRequests(userId, page, size);
         return new ApiResponse<>(requests, ApiResponseMessage.RECEIVED_RETRIEVED);
     }
 
@@ -52,9 +55,11 @@ public class FriendController {
     }
 
     @GetMapping
-    public ApiResponse<List<FriendResponseDto>> getFriends(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ApiResponse<Page<FriendResponseDto>> getFriends(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                           @RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "10") int size) {
         Long userId = userDetails.getUser().getId();
-        List<FriendResponseDto> friends = friendService.getFriends(userId);
+        Page<FriendResponseDto> friends = friendService.getFriends(userId, page, size);
         return new ApiResponse<>(friends, ApiResponseMessage.FRIENDS_RETRIEVED);
     }
 

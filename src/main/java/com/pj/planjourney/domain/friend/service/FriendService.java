@@ -11,6 +11,9 @@ import com.pj.planjourney.domain.user.repository.UserRepository;
 import com.pj.planjourney.global.common.exception.BusinessLogicException;
 import com.pj.planjourney.global.common.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,10 +51,11 @@ public class FriendService {
                 .map(FriendRequestResponseDto::new).toList();
     }
 
-    public List<FriendRequestResponseDto> getReceivedFriendRequests(Long userId) {
+    public Page<FriendRequestResponseDto> getReceivedFriendRequests(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
         User user = getUserById(userId);
-        return friendRequestRepository.findByReceiver(user).stream()
-                .map(FriendRequestResponseDto::new).toList();
+        Page<FriendRequest> friendRequestPage = friendRequestRepository.findByReceiver(user, pageable);
+        return friendRequestPage.map(FriendRequestResponseDto::new);
     }
 
     @Transactional
@@ -85,10 +89,11 @@ public class FriendService {
         friendRequestRepository.delete(friendRequest);
     }
 
-    public List<FriendResponseDto> getFriends(Long userId) {
+    public Page<FriendResponseDto> getFriends(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
         User user = getUserById(userId);
-        return friendRepository.findByUser(user).stream()
-                .map(FriendResponseDto::new).toList();
+        Page<Friend> friendPage = friendRepository.findByUser(user, pageable);
+        return friendPage.map(FriendResponseDto::new);
     }
 
     @Transactional
