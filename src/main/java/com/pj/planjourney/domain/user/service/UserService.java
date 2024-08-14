@@ -183,9 +183,10 @@ public class UserService {
                 .map(userPlan -> new MyUserPlanListResponseDto(
                         userPlan.getPlan().getId(),
                         userPlan.getUser().getNickname(),
-                        userPlan.getPlan().getCity().getName(),
                         userPlan.getPlan().getTitle(),
                         userPlan.getPlan().getIsPublished(),
+                        userPlan.getPlan().getStartDate(),
+                        userPlan.getPlan().getEndDate(),
                         userPlan.getPlan().getCreatedAt(),
                         userPlan.getPlan().getPublishedAt(),
                         userPlan.getPlan().getLikeCount(),

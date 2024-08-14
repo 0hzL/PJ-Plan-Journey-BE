@@ -34,8 +34,8 @@ public class ChildCommentService {
     }
 
 
-    public List<ChildCommentListResponseDto> getAllChildComment(Long childCommentId) {
-        List<ChildComment> childComments = childCommentRepository.findByCommentId(childCommentId);
+    public List<ChildCommentListResponseDto> getAllChildComment(Long commentId) {
+        List<ChildComment> childComments = childCommentRepository.findByCommentId(commentId);
 
         return childComments.stream()
                 .map(ChildCommentListResponseDto::new)

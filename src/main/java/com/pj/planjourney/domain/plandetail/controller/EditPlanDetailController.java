@@ -18,15 +18,14 @@ public class EditPlanDetailController {
     private final EditPlanDetailService editPlanService;
     private final RedisPublisher redisPublisher;
 
-    @MessageMapping("/room/{roomId}/entered")
-    @SendTo("/sub/room/{roomId}")
-    public String entered(@DestinationVariable(value = "roomId") String roomId) {
+    @MessageMapping("/room/{planId}/entered")
+    @SendTo("/sub/room/{planId}")
+    public String entered(@DestinationVariable(value = "planId") String planId) {
         return "초대된 친구가 입장하였습니다.";
     }
 
-    @MessageMapping("/edit/room/{roomId}")
-    @SendTo("/sub/room/{roomId}")
-    public void editPlan(@DestinationVariable(value = "roomId") String roomId, EditPlanDetailRequestDto request) {
+    @MessageMapping("/edit/room/{planId}")
+    public void editPlan(@DestinationVariable(value = "planId") String planId, EditPlanDetailRequestDto request) {
         EditPlanDetailResponseDto response = editPlanService.editPlan(request);
 
         redisPublisher.publish(response);

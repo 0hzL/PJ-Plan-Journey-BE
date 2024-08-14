@@ -30,8 +30,6 @@ public class NotificationService {
         User sender = findBySenderId(senderId);
         String message = sender.getNickname() + "님이 친구 요청을 보냈습니다.";
         Notification notification = createNotification(message, "FRIEND", recipientId);
-
-        publishNotification(recipientId, notification);
     }
 
     // 친구 요청 수락 알림 생성
@@ -40,9 +38,6 @@ public class NotificationService {
         User sender = findBySenderId(senderId);
         String message = sender.getNickname() + "님이 친구 요청을 수락했습니다.";
         Notification notification = createNotification(message, "FRIEND", recipientId);
-
-        publishNotification(recipientId, notification);
-
     }
 
     // 친구 요청 거절 알림 생성
@@ -50,9 +45,7 @@ public class NotificationService {
     public void sendFriendRejectedNotification(Long recipientId, Long senderId) {
         User sender = findBySenderId(senderId);
         String message = sender.getNickname() + "님이 친구 요청을 거절했습니다.";
-        Notification notification = createNotification(message, "FRIEND_REJECTED", recipientId);
-
-        publishNotification(recipientId, notification);
+        Notification notification = createNotification(message, "FRIEND", recipientId);
     }
 
     // 여행 하루 전 리마인드 알림 생성

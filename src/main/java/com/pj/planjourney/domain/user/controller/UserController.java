@@ -2,6 +2,8 @@ package com.pj.planjourney.domain.user.controller;
 
 import com.pj.planjourney.domain.refreshtoken.service.RefreshTokenService;
 import com.pj.planjourney.domain.user.dto.*;
+import com.pj.planjourney.domain.user.entity.User;
+import com.pj.planjourney.domain.user.repository.UserRepository;
 import com.pj.planjourney.domain.user.service.UserService;
 import com.pj.planjourney.global.auth.service.UserDetailsImpl;
 import com.pj.planjourney.global.auth.service.UserDetailsServiceImpl;
@@ -39,6 +41,7 @@ public class UserController {
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationManager authenticationManager;
     private final RedisTemplate redisTemplate;
+    private final UserRepository userRepository;
 
     //회원가입
     @PostMapping("")
@@ -138,13 +141,21 @@ public class UserController {
             // 새로운 리프레시 토큰 저장
             refreshTokenService.saveRefreshToken(email, refreshToken);
 
+            /// 사용자 정보 조회
+            User user = userRepository.findByEmail(email).orElseThrow(
+                    () -> new RuntimeException("User not found")
+            );
+
+            // LoginResponseDto 생성
+            LoginResponseDto loginDto = new LoginResponseDto(user.getNickname(),user.getEmail(),accessToken, refreshToken);
+
             // 응답 헤더 설정
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", accessToken);
             headers.add("RefreshToken", refreshToken);
 
 
-            ApiResponse<LoginResponseDto> apiResponse = new ApiResponse<>(null, ApiResponseMessage.USER_LOGIN);
+            ApiResponse<LoginResponseDto> apiResponse = new ApiResponse<>(loginDto, ApiResponseMessage.USER_LOGIN);
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(apiResponse);

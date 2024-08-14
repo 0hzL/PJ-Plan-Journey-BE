@@ -19,6 +19,8 @@ public class CreatePlanResponseDto {
     private String title;
     private String city;
     private String author;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private LocalDateTime createdAt;
     private final Map<LocalDate, List<CreatePlanDetailResponseDto>> planDetails = new TreeMap<>();
 
@@ -27,6 +29,8 @@ public class CreatePlanResponseDto {
         title = plan.getTitle();
         city = plan.getCity().getName();
         author = plan.getAuthor();
+        startDate = plan.getStartDate();
+        endDate = plan.getEndDate();
         createdAt = plan.getCreatedAt();
 
         List<CreatePlanDetailResponseDto> details = plan.getPlanDetails().stream().map(CreatePlanDetailResponseDto::new).toList();
