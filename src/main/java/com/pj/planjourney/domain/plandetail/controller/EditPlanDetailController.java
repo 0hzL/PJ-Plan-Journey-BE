@@ -25,9 +25,11 @@ public class EditPlanDetailController {
     }
 
     @MessageMapping("/edit/room/{planId}")
-    public void editPlan(@DestinationVariable(value = "planId") String planId, EditPlanDetailRequestDto request) {
+    @SendTo("/sub/room/{planId}")
+    public EditPlanDetailResponseDto editPlan(@DestinationVariable(value = "planId") String planId, EditPlanDetailRequestDto request) {
         EditPlanDetailResponseDto response = editPlanService.editPlan(request);
 
         redisPublisher.publish(response);
+        return response;
     }
 }
