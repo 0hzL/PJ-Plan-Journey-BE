@@ -2,13 +2,15 @@ package com.pj.planjourney.domain.plan.dto;
 
 import com.pj.planjourney.domain.plan.entity.Plan;
 import com.pj.planjourney.domain.plandetail.dto.CreatePlanDetailResponseDto;
-import com.pj.planjourney.domain.plandetail.dto.PlanDetailDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Getter
 @NoArgsConstructor
@@ -16,6 +18,7 @@ public class CreatePlanResponseDto {
     private Long planId;
     private String title;
     private String city;
+    private String author;
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDateTime createdAt;
@@ -25,6 +28,7 @@ public class CreatePlanResponseDto {
         planId = plan.getId();
         title = plan.getTitle();
         city = plan.getCity().getName();
+        author = plan.getAuthor();
         startDate = plan.getStartDate();
         endDate = plan.getEndDate();
         createdAt = plan.getCreatedAt();

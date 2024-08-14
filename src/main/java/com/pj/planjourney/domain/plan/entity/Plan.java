@@ -37,6 +37,7 @@ public class Plan extends Timestamped {
     private LocalDate startDate;
 
     private LocalDate endDate;
+    private String author;
 
     @OneToMany(mappedBy = "plan")
     private List<UserPlan> userPlans = new ArrayList<>();
@@ -79,10 +80,11 @@ public class Plan extends Timestamped {
         this.userPlans.add(userPlan);
     }
 
-    public Plan(CreatePlanRequestDto request, City city) {
+    public Plan(CreatePlanRequestDto request, City city, User user) {
         this.title = request.getTitle();
         this.isPublished = false;
         this.city = city;
+        this.author = user.getNickname();
         this.startDate = request.getStartDate();
         this.endDate = request.getEndDate();
     }
