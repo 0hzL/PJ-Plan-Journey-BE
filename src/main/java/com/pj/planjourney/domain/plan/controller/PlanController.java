@@ -6,6 +6,7 @@ import com.pj.planjourney.global.auth.service.UserDetailsImpl;
 import com.pj.planjourney.global.common.response.ApiResponse;
 import com.pj.planjourney.global.common.response.ApiResponseMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -46,8 +47,9 @@ public class PlanController {
 
     // 전체 PLAN 보기
     @GetMapping
-    public ApiResponse<List<PlanListResponseDto>> getAllPlans() {
-        List<PlanListResponseDto> responseDto = planService.getAllPlans();
+    public ApiResponse<Page<PlanListResponseDto>> getAllPlans(@RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "10") int size) {
+        Page<PlanListResponseDto> responseDto = planService.getAllPlans(page, size);
         return new ApiResponse<>(responseDto, ApiResponseMessage.SUCCESS);
     }
 

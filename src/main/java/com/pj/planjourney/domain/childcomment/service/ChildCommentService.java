@@ -10,6 +10,10 @@ import com.pj.planjourney.domain.user.repository.UserRepository;
 import com.pj.planjourney.global.common.exception.BusinessLogicException;
 import com.pj.planjourney.global.common.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,12 +38,10 @@ public class ChildCommentService {
     }
 
 
-    public List<ChildCommentListResponseDto> getAllChildComment(Long commentId) {
-        List<ChildComment> childComments = childCommentRepository.findByCommentId(commentId);
-
-        return childComments.stream()
-                .map(ChildCommentListResponseDto::new)
-                .toList();
+    public Page<ChildCommentListResponseDto> getAllChildComment(Long commentId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ChildComment> childComments = childCommentRepository.findByCommentId(commentId, pageable);
+        return childComments.map(ChildCommentListResponseDto::new);
     }
     public ChildCommentUpdateResponseDto updateChildComment(Long childCommentId, Long userId, ChildCommentUpdateRequestDto requestDto) {
         ChildComment childComment = getChildCommentById(childCommentId);
