@@ -16,8 +16,10 @@ import com.pj.planjourney.domain.userPlan.repository.UserPlanRepository;
 import com.pj.planjourney.global.common.exception.BusinessLogicException;
 import com.pj.planjourney.global.common.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 import static com.pj.planjourney.global.common.exception.ExceptionCode.*;
@@ -68,9 +70,10 @@ public class PlanService {
     }
 
     // isPublished가 true인 게시글 확인
-    public List<PlanListResponseDto> getAllPlans() {
-        return planRepository.findByIsPublishedTrue().stream()
-                .map(PlanListResponseDto::new).toList();
+    public Page<PlanListResponseDto> getAllPlans(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Plan> planPage = planRepository.findByIsPublishedTrue(pageable);
+        return planPage.map(PlanListResponseDto::new);
     }
 
     // 게시글 삭제 기능
