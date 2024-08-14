@@ -10,6 +10,9 @@ import com.pj.planjourney.domain.user.repository.UserRepository;
 import com.pj.planjourney.global.common.exception.BusinessLogicException;
 import com.pj.planjourney.global.common.exception.ExceptionCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,12 +36,10 @@ public class CommentService {
         return new CommentCreateResponseDto(savedComment);
     }
 
-    public List<CommentListResponseDto> getAllComment(Long planId) {
-
-        List<Comment> comments = commentRepository.findByPlanId(planId);
-
-        return comments.stream()
-                .map(CommentListResponseDto::new).toList();
+    public Page<CommentListResponseDto> getAllComment(Long planId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Comment> comments = commentRepository.findByPlanId(planId, pageable);
+        return comments.map(CommentListResponseDto::new);
     }
 
     public CommentUpdateResponseDto updateComment(Long planId, Long commentId, Long userId, CommentUpdateRequestDto requestDto) {

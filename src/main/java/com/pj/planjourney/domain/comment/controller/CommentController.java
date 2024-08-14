@@ -6,6 +6,7 @@ import com.pj.planjourney.global.auth.service.UserDetailsImpl;
 import com.pj.planjourney.global.common.response.ApiResponse;
 import com.pj.planjourney.global.common.response.ApiResponseMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,8 +31,10 @@ public class CommentController {
     }
 
     @GetMapping("/comments")
-    public ApiResponse<List<CommentListResponseDto>> getAllComment(@PathVariable Long planId) {
-        List<CommentListResponseDto> responseDto = commentService.getAllComment(planId);
+    public ApiResponse<Page<CommentListResponseDto>> getAllComment(@PathVariable Long planId,
+                                                                   @RequestParam(defaultValue = "0") int page,
+                                                                   @RequestParam(defaultValue = "10") int size) {
+        Page<CommentListResponseDto> responseDto = commentService.getAllComment(planId, page, size);
         return new ApiResponse<>(responseDto, ApiResponseMessage.SUCCESS);
     }
 
