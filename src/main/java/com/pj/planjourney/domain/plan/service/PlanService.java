@@ -36,7 +36,7 @@ public class PlanService {
         User user = findUserById(userId);
         City city = findCityByName(request.getCity());
 
-        Plan plan = planRepository.save(new Plan(request, city));
+        Plan plan = planRepository.save(new Plan(request, city, user));
         for (CreatePlanDetailRequestDto detailDto : request.getPlanDetails()) {
             PlanDetail planDetail = detailDto.toEntity(plan);
             plan.addPlanDetail(planDetail);
