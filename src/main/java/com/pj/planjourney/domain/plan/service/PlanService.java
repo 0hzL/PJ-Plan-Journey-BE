@@ -63,7 +63,7 @@ public class PlanService {
     public PlanInfoResponseDto getPlan(Long planId) {
         Plan plan = findByPlanId(planId);
 
-        List<PlanDetail> planDetails = planDetailRepository.findByPlan(plan);
+        List<PlanDetail> planDetails = planDetailRepository.findByPlanOrderBySequenceAsc(plan);
         return new PlanInfoResponseDto(plan, planDetails);
     }
 

@@ -12,5 +12,5 @@ public interface PlanDetailRepository extends JpaRepository<PlanDetail, Long> {
 
     List<PlanDetail> findByPlanIdOrderByDateAscSequenceAsc(Long planId);
 
-    List<PlanDetail> findByPlan(Plan plan);
+    List<PlanDetail> findByPlanOrderBySequenceAsc(Plan plan);
 }
