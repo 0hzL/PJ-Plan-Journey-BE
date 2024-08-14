@@ -29,7 +29,7 @@ public class Comment extends Timestamped {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChildComment> childComments = new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "plan_id")
