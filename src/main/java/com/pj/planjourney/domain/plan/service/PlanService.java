@@ -19,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 import static com.pj.planjourney.global.common.exception.ExceptionCode.*;
@@ -33,7 +35,7 @@ public class PlanService {
     private final CityRepository cityRepository;
     private final PlanDetailRepository planDetailRepository;
     private final UserPlanRepository userPlanRepository;
-  
+
     public CreatePlanResponseDto save(Long userId, CreatePlanRequestDto request) {
         User user = findUserById(userId);
         City city = findCityByName(request.getCity());
@@ -71,7 +73,8 @@ public class PlanService {
 
     // isPublished가 true인 게시글 확인
     public Page<PlanListResponseDto> getAllPlans(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Sort sort = Sort.by("id").descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<Plan> planPage = planRepository.findByIsPublishedTrue(pageable);
         return planPage.map(PlanListResponseDto::new);
     }
@@ -116,7 +119,7 @@ public class PlanService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException(USER_NOT_FOUND));
     }
-  
+
 
     private City findCityByName(String cityName) {
         return cityRepository.findByName(cityName)
