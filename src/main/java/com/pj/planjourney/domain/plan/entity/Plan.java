@@ -93,4 +93,8 @@ public class Plan extends Timestamped {
         planDetails.add(planDetail);
         planDetail.setPlan(this);
     }
+
+    public void setPublishedAt() {
+        this.publishedAt = LocalDateTime.now();
+    }
 }
