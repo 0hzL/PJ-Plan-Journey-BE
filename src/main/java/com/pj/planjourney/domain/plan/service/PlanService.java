@@ -93,6 +93,7 @@ public class PlanService {
 
         if (plan.getIsPublished()) {
             plan.publish(false);
+            plan.setPublishedAt();
             planRepository.save(plan);
         } else {
             plan.publish(true);
