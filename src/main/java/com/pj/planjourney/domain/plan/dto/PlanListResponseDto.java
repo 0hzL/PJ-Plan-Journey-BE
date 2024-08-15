@@ -15,6 +15,8 @@ public class PlanListResponseDto {
     private LocalDateTime createdAt;
     private Integer likeCount;
     private String cityName;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     public PlanListResponseDto(Plan plan) {
         this.planId = plan.getId();
@@ -25,5 +27,7 @@ public class PlanListResponseDto {
         this.createdAt = plan.getCreatedAt();
         this.likeCount = plan.getLikeCount();
         this.cityName = plan.getCity().getName();
+        this.startDate = plan.getStartDate();
+        this.endDate = plan.getEndDate();
     }
 }
