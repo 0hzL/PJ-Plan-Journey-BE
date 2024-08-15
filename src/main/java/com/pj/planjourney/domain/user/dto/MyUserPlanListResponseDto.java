@@ -11,7 +11,6 @@ public class MyUserPlanListResponseDto {
 
     private Long planId;
     private String nickname;
-    private String cityname;
     private String title;
     private Boolean isPublished;
     private LocalDateTime createdAt;
@@ -24,7 +23,7 @@ public class MyUserPlanListResponseDto {
 
 
     public MyUserPlanListResponseDto(Long id, String nickname, String title, Boolean isPublished, LocalDate startDate, LocalDate endDate, LocalDateTime createdAt, LocalDateTime publishedAt, Integer likeCount, Integer commentCount) {
-        this.planId = planId;
+        this.planId = id;
         this.nickname = nickname;
         this.title = title;
         this.isPublished = isPublished;
