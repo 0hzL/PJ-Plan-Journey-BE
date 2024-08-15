@@ -4,6 +4,7 @@ import com.pj.planjourney.domain.plan.entity.Plan;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 public class PlanListResponseDto {
