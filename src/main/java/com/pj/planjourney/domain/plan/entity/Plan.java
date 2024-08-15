@@ -29,13 +29,9 @@ public class Plan extends Timestamped {
     private Long id;
 
     private String title;
-
     private Boolean isPublished;
-
     private LocalDateTime publishedAt;
-
     private LocalDate startDate;
-
     private LocalDate endDate;
     private String author;
 

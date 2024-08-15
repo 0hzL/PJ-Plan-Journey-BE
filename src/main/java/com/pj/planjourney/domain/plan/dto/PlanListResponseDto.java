@@ -18,6 +18,7 @@ public class PlanListResponseDto {
     private String cityName;
     private LocalDate startDate;
     private LocalDate endDate;
+    private Integer commentCount;
 
     public PlanListResponseDto(Plan plan) {
         this.planId = plan.getId();
@@ -30,5 +31,6 @@ public class PlanListResponseDto {
         this.cityName = plan.getCity().getName();
         this.startDate = plan.getStartDate();
         this.endDate = plan.getEndDate();
+        this.commentCount = plan.getComments().size();
     }
 }
