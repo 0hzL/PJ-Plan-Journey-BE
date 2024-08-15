@@ -78,6 +78,9 @@ public class Plan extends Timestamped {
 
         UserPlan userPlan = new UserPlan(newUser, this);
         this.userPlans.add(userPlan);
+        this.author = originalPlan.getAuthor();
+        this.startDate = originalPlan.getStartDate();
+        this.endDate = originalPlan.getEndDate();
     }
 
     public Plan(CreatePlanRequestDto request, City city, User user) {
